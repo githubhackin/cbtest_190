@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CBTEST 190</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;400&display=swap');
+
+        body {
+            font-family: "Poppins", sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .quiz-container {
+            width: 60%;
+            max-width: 450px;
+            background-color: #ffffff;
+            box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: #1e3d58;
+        }
+
+        .options {
+            display: block;
+            text-align: left;
+        }
+
+        .option {
+            background-color: #f4f6f9;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            border: 1px solid #d1d1d1;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .option:hover, .option.selected {
+            background-color: #1e3d58;
+            color: #ffffff;
+        }
+
+        .navigation {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .arrow {
+            padding: 10px 20px;
+            background-color: #1e3d58;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .arrow:disabled {
+            background-color: #e0e0e0;
+            color: #000;
+            cursor: not-allowed;
+        }
+
+        .results, #career-details {
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .carrera-list {
+            display: none;
+            margin-top: 10px;
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .carrera-item {
+            background-color: #f4f6f9;
+            padding: 8px;
+            border-radius: 5px;
+            margin-top: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .carrera-item:hover {
+            background-color: #1e3d58;
+            color: #fff;
+        }
+
+        .rules {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .rules ul {
+            list-style-type: disc;
+            padding-left: 20px;
+        }
+
+        #start-btn, #back-btn {
+            padding: 10px 20px;
+            background-color: #1e3d58;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #progress-bar-container {
+            width: 100%;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        #progress-bar {
+            width: 0;
+            height: 10px;
+            background-color: #1e3d58;
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+
+        #error-message {
+            color: red;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .career-card {
+            background-color: #f4f6f9;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+
+        #career-details {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <h1>CBTEST 190</h1>
+
+        <!-- Reglas del Test (inicialmente visibles) -->
+        <div id="rules" class="rules" style="display: block;">
+            <h2>Reglas del Test</h2>
+            <ul>
+                <li>Lee cada pregunta con atención antes de seleccionar tu respuesta.</li>
+                <li>No hay respuestas correctas o incorrectas, es una evaluación de tus intereses.</li>
+                <li>Responde con sinceridad para obtener los resultados más precisos.</li>
+                <li>Al finalizar, verás recomendaciones de carreras relacionadas con tus respuestas.</li>
+            </ul>
+            <button id="start-btn" onclick="startTest()">Comenzar Test</button>
+        </div>
+
+        <!-- Progreso -->
+        <div id="progress-bar-container">
+            <div id="progress-bar"></div>
+        </div>
+
+        <!-- Preguntas hechas con el test -->
+        <div id="question-container" style="display: none;">
+            <div id="question-text" class="question"></div>
+
+            <div class="options"></div>
+
+            <div id="error-message">Por favor, selecciona una respuesta antes de continuar.</div>
+
+            <div class="navigation">
+                <button id="prev-btn" class="arrow" onclick="prevQuestion()" disabled>&larr; Anterior</button>
+                <button id="next-btn" class="arrow" onclick="nextQuestion()">Siguiente &rarr;</button>
+                <button id="submit-btn" class="arrow" onclick="submitTest()" style="display: none;">Enviar</button>
+            </div>
+        </div>
+
+        <!-- Resultados (inicialmente ocultos) -->
+        <div id="results" class="results" style="display: none;">
+            <h2>Resultados:</h2>
+            <div id="resultadoTecnico"></div>
+            <button onclick="toggleCarreras('Tecnica')" class="arrow">Ver carreras Técnicas</button>
+            <ul id="carrerasTecnicas" class="carrera-list"></ul>
+
+            <div id="resultadoSalud"></div>
+            <button onclick="toggleCarreras('Salud')" class="arrow">Ver carreras en Salud</button>
+            <ul id="carrerasSalud" class="carrera-list"></ul>
+
+            <div id="resultadoEconomico"></div>
+            <button onclick="toggleCarreras('Economico')" class="arrow">Ver carreras Económicas</button>
+            <ul id="carrerasEconomico" class="carrera-list"></ul>
+
+            <button class="arrow" onclick="showCareerDetails()">Ver Detalles de Carrera</button>
+        </div>
+
+        <!-- Detalles de Carrera -->
+        <div id="career-details">
+            <button id="back-btn" onclick="backToResults()">&larr; Volver a Resultados</button>
+            <div id="career-card" class="career-card">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            { question: "1. ¿Te interesa encontrar nuevas formas de hacer las cosas?", area: "Tecnica/Ciencias_exactas" },
+            { question: "2. ¿Te sientes conectado con la naturaleza y los seres vivos?", area: "Ciencias_salud/biológicas/Agropecuarias" },
+            { question: "3. ¿Te consideras una persona con habilidades para liderar a otros?", area: "Económico/Administrativa" },
+            { question: "4. ¿Te gusta descubrir nuevas formas de entender las cosas?", area: "Tecnica/Ciencias_exactas" },
+            { question: "5. ¿Te apasiona cuidar de los animales, plantas o el medio ambiente?", area: "Ciencias_salud/biológicas/Agropecuarias" },
+            { question: "6. ¿Tienes facilidad para organizar y dirigir a grupos grandes de personas?", area: "Económico/Administrativa" },
+            { question: "7. ¿Te gusta saber cómo funcionan las cosas y disfrutas arreglar o construir objetos?", area: "Tecnica/Ciencias_exactas" },
+            { question: "8. ¿Te interesa realizar investigaciones científicas en laboratorios?", area: "Ciencias_salud/biológicas/Agropecuarias" },
+            { question: "9. ¿Sueles ser el primero en encontrar soluciones a problemas sociales?", area: "Económico/Administrativa" },
+            { question: "10. ¿Siempre te da curiosidad saber de qué están hechos los objetos que usas?", area: "Tecnica/Ciencias_exactas" },
+            { question: "11. ¿Te interesa conocer los detalles de todo lo que te rodea?", area: "Tecnica/Ciencias_exactas" },
+            { question: "12. ¿Te gusta negociar y obtener lo que deseas en diferentes situaciones?", area: "Económico/Administrativa" },
+            { question: "13. ¿Te has preguntado alguna vez cuántas estrellas hay en el universo?", area: "Tecnica/Ciencias_exactas" },
+            { question: "14. ¿Consideras que tienes una buena memoria y retienes bien la información?", area: "Económico/Administrativa" }
+        ];
+
+        const careerDetails = {
+            "Tecnica": {
+                title: "Carreras Tecnicas",
+                description: "Las carreras técnicas se enfocan en la resolución de problemas prácticos y la innovación tecnológica.",
+                topCareers: [
+                    "Programación",
+                    "Ofimatica",
+
+                ],
+                skills: [
+                    "Pensamiento analítico",
+                    "Resolución de problemas",
+                    "Creatividad técnica",
+                    "Habilidades computacionales"
+                ]
+            },
+            "Salud": {
+                title: "Carreras de Salud",
+                description: "Las carreras de salud se dedican al cuidado, investigación y mejora del bienestar de los seres vivos.",
+                topCareers: [
+                    "Enfermería"
+                ],
+                skills: [
+                    "Empatía",
+                    "Comunicación",
+                    "Atención al detalle",
+                ]
+            },
+            "Economico": {
+                title: "Carreras Económico-Administrativas",
+                description: "Estas carreras se centran en la gestión de recursos, administración y estrategias económicas.",
+                topCareers: [
+                    "Contabilidad",
+                    "Recursos humanos",
+                ],
+                skills: [
+                    "Liderazgo",
+                    "Toma de decisiones",
+                    "Análisis financiero",
+                    "Comunicación estratégica"
+                ]
+            }
+        };
+
+        const optionsText = ["Muy en desacuerdo", "En desacuerdo", "Indiferente", "De acuerdo", "Muy de acuerdo"];
+        const scores = { "Muy en desacuerdo": 1, "En desacuerdo": 2, "Indiferente": 3, "De acuerdo": 4, "Muy de acuerdo": 5 };
+
+        let currentQuestionIndex = 0;
+        let selectedOptions = Array(questions.length).fill(null);
+        let areas = {
+            "Tecnica/Ciencias exactas": 0,
+            "Ciencias_salud/biológicas/Agropecuarias": 0,
+            "Económico/Administrativa": 0
+        };
+
+        function startTest() {
+            // Ocultar reglas del test
+            document.getElementById('rules').style.display = 'none';
+            document.getElementById('question-container').style.display = 'block';
+            document.getElementById('progress-bar-container').style.display = 'block';
+            showQuestion();
+            updateProgressBar();
+        }
+
+        function showQuestion() {
+            const question = questions[currentQuestionIndex];
+            document.getElementById('question-text').textContent = question.question;
+            const optionsContainer = document.querySelector('.options');
+            optionsContainer.innerHTML = ''; // Limpiar opciones previas
+
+            optionsText.forEach((option) => {
+                const div = document.createElement('div');
+                div.classList.add('option');
+                div.textContent = option;
+                div.onclick = () => selectOption(option, div);
+                optionsContainer.appendChild(div);
+            });
+
+            // Restaurar la opción seleccionada previamente si existe
+            if (selectedOptions[currentQuestionIndex]) {
+                const selectedOptionDiv = Array.from(optionsContainer.children)
+                    .find(el => el.textContent === selectedOptions[currentQuestionIndex]);
+                if (selectedOptionDiv) {
+                    selectedOptionDiv.classList.add('selected');
+                }
+            }
+
+            // Ocultar mensaje de error
+            document.getElementById('error-message').style.display = 'none';
+        }
+
+        function selectOption(option, optionDiv) {
+            const options = document.querySelectorAll('.option');
+            options.forEach(opt => opt.classList.remove('selected')); // Remover clase seleccionada de las opciones
+            optionDiv.classList.add('selected');
+            selectedOptions[currentQuestionIndex] = option;
+        }
+
+        function updateProgressBar() {
+            const progressBar = document.getElementById('progress-bar');
+            const progressPercentage = ((currentQuestionIndex + 1) / questions.length) * 100;
+            progressBar.style.width = `${progressPercentage}%`;
+        }
+
+        function nextQuestion() {
+            // Validar que se haya seleccionado una opción
+            if (selectedOptions[currentQuestionIndex] === null) {
+                document.getElementById('error-message').style.display = 'block';
+                return;
+            }
+
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                showQuestion();
+                document.getElementById('prev-btn').disabled =                document.getElementById('prev-btn').disabled = false;
+                if (currentQuestionIndex === questions.length - 1) {
+                    document.getElementById('next-btn').style.display = 'none';
+                    document.getElementById('submit-btn').style.display = 'inline-block';
+                }
+                updateProgressBar();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                showQuestion();
+                document.getElementById('next-btn').style.display = 'inline-block';
+                document.getElementById('submit-btn').style.display = 'none';
+                updateProgressBar();
+            }
+        }
+
+        function submitTest() {
+            // Reiniciar áreas antes de calcular
+            areas = {
+                "Tecnica/Ciencias_exactas": 0,
+                "Ciencias_salud/biológicas/Agropecuarias": 0,
+                "Económico/Administrativa": 0
+            };
+        
+            // Calcular los puntajes de las áreas
+            selectedOptions.forEach((option, index) => {
+                const question = questions[index];
+                if (option && scores[option]) { // Verifica que la opción sea válida y esté en el objeto `scores`
+                    areas[question.area] += scores[option]; // Asegúrate de que el área sea la correcta
+                }
+            });
+        
+            // Mostrar resultados
+            document.getElementById('question-container').style.display = 'none';
+            document.getElementById('results').style.display = 'block';
+        
+            // Mostrar resultados por área
+            document.getElementById('resultadoTecnico').textContent = `Área Técnica: ${areas['Tecnica/Ciencias_exactas']}`;
+            document.getElementById('resultadoSalud').textContent = `Área de Salud: ${areas['Ciencias_salud/biológicas/Agropecuarias']}`;
+            document.getElementById('resultadoEconomico').textContent = `Área Económica: ${areas['Económico/Administrativa']}`;
+        
+            // Actualizar la visibilidad de las opciones de carreras
+            document.getElementById('carrerasTecnicas').innerHTML = careerDetails['Tecnica'].topCareers.map(career => `<li class="carrera-item">${career}</li>`).join('');
+            document.getElementById('carrerasSalud').innerHTML = careerDetails['Salud'].topCareers.map(career => `<li class="carrera-item">${career}</li>`).join('');
+            document.getElementById('carrerasEconomico').innerHTML = careerDetails['Economico'].topCareers.map(career => `<li class="carrera-item">${career}</li>`).join('');
+        }
+
+        function toggleCarreras(area) {
+            const carreraList = document.getElementById(`carreras${area}`);
+            const currentDisplay = carreraList.style.display;
+            carreraList.style.display = currentDisplay === 'none' ? 'block' : 'none';
+        }
+
+        function showCareerDetails() {
+            document.getElementById('career-details').style.display = 'block';
+            const area = Object.keys(careerDetails)[1]; 
+            const careerDetail = careerDetails[area];
+            const careerCard = document.getElementById('career-card');
+            careerCard.innerHTML = `
+                <h3>${careerDetail.title}</h3>
+                <p>${careerDetail.description}</p>
+                <h4>Principales carreras:</h4>
+                <ul>
+                    ${careerDetail.topCareers.map(career => `<li>${career}</li>`).join('')}
+                </ul>
+                <h4>Habilidades necesarias:</h4>
+                <ul>
+                    ${careerDetail.skills.map(skill => `<li>${skill}</li>`).join('')}
+                </ul>
+            `;
+        }
+
+        function backToResults() {
+            document.getElementById('career-details').style.display = 'none';
+            document.getElementById('results').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
